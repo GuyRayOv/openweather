@@ -1,5 +1,3 @@
-
-import streamlit as st
 import requests
 
 """
@@ -22,5 +20,6 @@ response = requests.get(open_weatehr_base, params=my_params)
 try: response.raise_for_status()
 except response.exceptions.HTTPError as e: print(e)
 
-print(response.json())
+current = response.json()['current']
+print(f"Current Weather Conditions: {current['weather'][0]['description']}, {int(current['temp']-273.15)}C, {current['humidity']}% humidity")
 

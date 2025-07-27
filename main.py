@@ -1,3 +1,5 @@
+
+import streamlit as st
 import requests
 
 """
@@ -16,10 +18,19 @@ my_lon = 34.5142 # -87.629799
 
 my_params = {"lat": {my_lat}, "lon": {my_lon}, "appid": {my_api_key}}
 
-response = requests.get(open_weatehr_base, params=my_params)
-try: response.raise_for_status()
-except response.exceptions.HTTPError as e: print(e)
 
-current = response.json()['current']
-print(f"Current Weather Conditions: {current['weather'][0]['description']}, {int(current['temp']-273.15)}C, {current['humidity']}% humidity")
+
+st.title('Weather App')
+
+name = st.text_input('Enter your name', '')
+
+if name:
+    response = requests.get(open_weatehr_base, params=my_params)
+    try: response.raise_for_status()
+    except response.exceptions.HTTPError as e: print(e)
+
+    current = response.json()['current']
+
+    st.write(f'Hello {name}, welcome to the weather app!')
+    st.write(f"Current Weather Conditions at your location: {current['weather'][0]['description']}, {int(current['temp']-273.15)}C, {current['humidity']}% humidity")
 

@@ -35,6 +35,6 @@ st.title('Weather App')
 
 my_location = st.text_input('Enter a location name', '')
 
-json = get_weather_data_for(my_location)
-if not json == []:
+if my_location:
+    json = get_weather_data_for(my_location)
     st.write(f"Current Weather Conditions in {my_location}: {json['current']['weather'][0]['description']}, {int(json['current']['temp']-273.15)}C, {json['current']['humidity']}% humidity")

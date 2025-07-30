@@ -1,4 +1,4 @@
-
+from time import process_time_ns
 
 import streamlit as st
 import requests
@@ -14,6 +14,7 @@ WEATHER_BASE_URL = "https://api.openweathermap.org/data/3.0/onecall"
 WEATHER_ICON_BASE_URL = "http://openweathermap.org/img/wn/"
 MY_API_KEY = "c4d9b7d003d31461abe0aec452e24151"
 FAVORITE_LOCATIONS_FILE = 'favorite_locations.json'
+
 
 #================================================================================================
 def webapi_call(url, params={}):
@@ -38,7 +39,7 @@ def get_weather_data_for(location):
 
     return json2
 #================================================================================================
-def present_map_for(this_location):
+def show_map_for(this_location):
     # Create a Folium map around the location
     m = folium.Map(location=[this_location['lat'], this_location['lon']], zoom_start=13)
 
@@ -49,21 +50,27 @@ def present_map_for(this_location):
     output = st_folium(m, width=700, height=500)
 
 #=================================================================================================
-def present_weather_data_for(location, location_data):
-    #    print(j)
+def show_weather_data_for(location, location_data):
 
-    # Print the weather data for the location
-    st.write(f"Weather Conditions in {location}:")
-    st.image(WEATHER_ICON_BASE_URL + location_data['current']['weather'][0]['icon'] + "@2x.png")
+    # location
+    st.write(f"Weather Conditions in {location}")
+
+    # time @ location
+    st.write(f"Local time: {get_local_datetime(location_data['current']['dt'], location_data['timezone'])}")
+
+    # weather details @ location
     st.write(f"{location_data['current']['weather'][0]['description']}, {int(location_data['current']['temp'] - 273.15)}C, {location_data['current']['humidity']}% humidity")
-    st.write(f"{get_local_datetime(location_data['current']['dt'], location_data['timezone'])} (local time)\n")
+
+    # weather icon
+    st.image(WEATHER_ICON_BASE_URL + location_data['current']['weather'][0]['icon'] + "@2x.png")
+
 
 #=================================================================================================
-def preset_weather_for(location):
+def show_weather_for(location):
 
-    location_json = get_weather_data_for(location)
-    present_weather_data_for(location, location_json)
-    present_map_for(location_json)
+    location_data = get_weather_data_for(location)
+    show_weather_data_for(location, location_data)
+    show_map_for(location_data)
 
 #================================================================================================
 def get_local_datetime(utc_timestamp, loca_timezone):
@@ -81,14 +88,12 @@ def get_favorite_locations():
     return get_json_from_file(FAVORITE_LOCATIONS_FILE)
 
 
-
-
 st.title('Weather App')
 
 for location in get_favorite_locations().keys():
-    preset_weather_for(location)
+    show_weather_for(location)
 
 location = st.text_input('Enter a location name', '')
 if location:
-    preset_weather_for(location)
+    show_weather_for(location)
 

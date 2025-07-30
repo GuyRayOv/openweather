@@ -4,6 +4,7 @@ import requests
 import datetime
 import pytz
 import json
+import folium
 
 GEO_BASE_URL = "http://api.openweathermap.org/geo/1.0/direct"
 WEATHER_BASE_URL = "https://api.openweathermap.org/data/3.0/onecall"

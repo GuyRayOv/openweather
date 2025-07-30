@@ -47,8 +47,9 @@ def get_favorite_locations():
 #=================================================================================================
 def preset_weather_for_location(location):
     json = get_weather_data_for(location)
-    st.write(f"Weather Conditions in {location}, {get_local_datetime(json['current']['dt'], json['timezone'])} (local time)")
-    st.write(f"{json['current']['weather'][0]['description']}, {int(json['current']['temp'] - 273.15)}C, {json['current']['humidity']}% humidity")
+    st.write(f"Weather Conditions in {location}: {json['current']['weather'][0]['description']}, {int(json['current']['temp'] - 273.15)}C, {json['current']['humidity']}% humidity")
+    st.write(f"{get_local_datetime(json['current']['dt'], json['timezone'])} (local time)\n")
+
 
 st.title('Weather App')
 

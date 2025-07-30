@@ -42,7 +42,7 @@ location = st.text_input('Enter a location name', '')
 if location:
     json = get_weather_data_for(location)
     st.write(f"Weather Conditions in {location}")
-    st.write(f"{get_local_datetime(json['current']['dt'], json['timezone'])} (local time)")
+    st.write(f"{get_local_datetime(json['current']['dt'], json['timezone'])} ({location} time)")
     st.write(f"{json['current']['weather'][0]['description']}")
     st.write(f"{int(json['current']['temp']-273.15)}C")
     st.write(f"{json['current']['humidity']}% humidity")

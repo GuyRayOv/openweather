@@ -49,20 +49,20 @@ def present_map_for(this_location):
     output = st_folium(m, width=700, height=500)
 
 #=================================================================================================
-def present_weather_data_for(location):
+def present_weather_data_for(location, json_data):
     #    print(json['current']['weather'][0]['icon'])
 
     # Print the weather data for the location
-    st.write(f"Weather Conditions") #in {location}:")
-    st.write(f"{location['current']['weather'][0]['description']}, {int(location['current']['temp'] - 273.15)}C, {location['current']['humidity']}% humidity")
-    st.write(f"{get_local_datetime(location['current']['dt'], location['timezone'])} (local time)\n")
+    st.write(f"Weather Conditions in {location}:")
+    st.write(f"{json_data['current']['weather'][0]['description']}, {int(json_data['current']['temp'] - 273.15)}C, {json_data['current']['humidity']}% humidity")
+    st.write(f"{get_local_datetime(json_data['current']['dt'], json_data['timezone'])} (local time)\n")
 
 #=================================================================================================
-def preset_weather_for(this_location):
+def preset_weather_for(location):
 
-    location = get_weather_data_for(this_location)
-    present_weather_data_for(location)
-    present_map_for(location)
+    location_json = get_weather_data_for(location)
+    present_weather_data_for(location, location_json)
+    present_map_for(location_json)
 
 #================================================================================================
 def get_local_datetime(utc_timestamp, loca_timezone):

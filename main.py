@@ -11,7 +11,7 @@ from streamlit_folium import st_folium
 #================================================================================================
 GEO_BASE_URL = "http://api.openweathermap.org/geo/1.0/direct"
 WEATHER_BASE_URL = "https://api.openweathermap.org/data/3.0/onecall"
-WEATHER_ICON_BASE_URL = "http://openweathermap.org/img/wn/01d2x.png"
+WEATHER_ICON_BASE_URL = "http://openweathermap.org/img/wn/"
 MY_API_KEY = "c4d9b7d003d31461abe0aec452e24151"
 FAVORITE_LOCATIONS_FILE = 'favorite_locations.json'
 
@@ -49,13 +49,14 @@ def present_map_for(this_location):
     output = st_folium(m, width=700, height=500)
 
 #=================================================================================================
-def present_weather_data_for(location, json_data):
-    #    print(json['current']['weather'][0]['icon'])
+def present_weather_data_for(location, location_data):
+    #    print(j)
 
     # Print the weather data for the location
     st.write(f"Weather Conditions in {location}:")
-    st.write(f"{json_data['current']['weather'][0]['description']}, {int(json_data['current']['temp'] - 273.15)}C, {json_data['current']['humidity']}% humidity")
-    st.write(f"{get_local_datetime(json_data['current']['dt'], json_data['timezone'])} (local time)\n")
+    st.image(WEATHER_ICON_BASE_URL + location_data['current']['weather'][0]['icon'] + "@2x.png")
+    st.write(f"{location_data['current']['weather'][0]['description']}, {int(location_data['current']['temp'] - 273.15)}C, {location_data['current']['humidity']}% humidity")
+    st.write(f"{get_local_datetime(location_data['current']['dt'], location_data['timezone'])} (local time)\n")
 
 #=================================================================================================
 def preset_weather_for(location):

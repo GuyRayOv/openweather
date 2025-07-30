@@ -3,6 +3,7 @@ import streamlit as st
 import requests
 import datetime
 import pytz
+import json
 
 GEO_BASE_URL = "http://api.openweathermap.org/geo/1.0/direct"
 WEATHER_BASE_URL = "https://api.openweathermap.org/data/3.0/onecall"
@@ -33,18 +34,26 @@ def get_local_datetime(utc_timestamp, loca_timezone):
     utc_dt = datetime.datetime.fromtimestamp(utc_timestamp, datetime.UTC).replace(tzinfo=pytz.utc)
     return utc_dt.astimezone(pytz.timezone(loca_timezone)).strftime("%A, %B %d, %Y, %I:%M %p")
 
+#=================================================================================================
+def get_json_from_file(filename):
+    try: f=open(filename, 'r')
+    except FileNotFoundError: st.write(f"{filename} cannt open")
+    return json.load(f)
 
+#=================================================================================================
+def get_favorite_locations():
+    return get_json_from_file('favorite_locations.json')
+
+#=================================================================================================
+def preset_weather_for_location(location):
+    json = get_weather_data_for(location)
+    st.write(f"Weather Conditions in {location}, {get_local_datetime(json['current']['dt'], json['timezone'])} (local time)")
+    st.write(f"{json['current']['weather'][0]['description']}, {int(json['current']['temp'] - 273.15)}C, {json['current']['humidity']}% humidity")
 
 st.title('Weather App')
 
+for location in get_favorite_locations().keys(): preset_weather_for_location(location)
+
 location = st.text_input('Enter a location name', '')
-
-if location:
-    json = get_weather_data_for(location)
-    st.write(f"Weather Conditions in {location}")
-    st.write(f"{get_local_datetime(json['current']['dt'], json['timezone'])} ({location} time)")
-    st.write(f"{json['current']['weather'][0]['description']}")
-    st.write(f"{int(json['current']['temp']-273.15)}C")
-    st.write(f"{json['current']['humidity']}% humidity")
-
+if location: preset_weather_for_location(location)
 

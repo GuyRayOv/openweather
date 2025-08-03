@@ -100,7 +100,6 @@ def get_favorite_locations():
 #=================================================================================================
 
 
-
 st.title(""" Weather App """)
 
 if st.checkbox('Show favorite locations'):

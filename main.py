@@ -8,6 +8,9 @@ import pytz
 import json
 import folium
 from streamlit_folium import st_folium
+import pandas as pd
+import numpy as np
+
 
 #================================================================================================
 GEO_BASE_URL = "http://api.openweathermap.org/geo/1.0/direct"
@@ -95,10 +98,14 @@ def get_favorite_locations():
     return get_json_from_file(FAVORITE_LOCATIONS_FILE)
 
 #=================================================================================================
-st.title("""Weather App """)
 
-for location, units in get_favorite_locations().items():
-    show_weather_for(location, units)
+
+
+st.title(""" Weather App """)
+
+
+if st.checkbox('Show favorite locations'):
+    for location, units in get_favorite_locations().items(): show_weather_for(location, units)
 
 location = st.text_input('Enter a location name', '')
 if location:

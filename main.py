@@ -103,11 +103,9 @@ def get_favorite_locations():
 
 st.title(""" Weather App """)
 
-
 if st.checkbox('Show favorite locations'):
     for location, units in get_favorite_locations().items(): show_weather_for(location, units)
 
 location = st.text_input('Enter a location name', '')
-if location:
-    show_weather_for(location,'C')
+if location: show_weather_for(location,'C')
 

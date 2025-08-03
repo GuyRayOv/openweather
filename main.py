@@ -1,6 +1,7 @@
 from time import process_time_ns
 
 import streamlit as st
+#import mymodel as m
 import requests
 import datetime
 import pytz
@@ -30,7 +31,6 @@ def get_weather_data_for(location):
     json1 = webapi_call(GEO_BASE_URL, params={"q": location, "appid": MY_API_KEY})
 
     if json1 == []: st.write(f"{my_location} cannt get web infomation")
-
     else: json2 = webapi_call(WEATHER_BASE_URL, params={"lat":json1[0]["lat"], "lon":json1[0]["lon"], "appid": MY_API_KEY})
 
     if json2 == []: st.write(f"lat:{json1[0]["lat"]}, lon:{json1[0]["lon"]} cannt get web infomation")
@@ -67,7 +67,6 @@ def show_weather_data_for(location, units, location_data):
 
 #=================================================================================================
 def show_weather_for(location, units):
-
     location_data = get_weather_data_for(location)
     show_weather_data_for(location, units, location_data)
     show_map_for(location_data)
@@ -79,21 +78,28 @@ def get_local_datetime(utc_timestamp, loca_timezone):
 
 #=================================================================================================
 def get_json_from_file(filename):
-    try: f=open(filename, 'r')
-    except FileNotFoundError: st.write(f"{filename} cannt open")
-    return json.load(f)
+    json_data = {}
+    try:
+        f=open(filename, 'r')
+    except FileNotFoundError:
+        st.write(f"{filename} cannt open")
+    else:
+        try: json_data = json.load(f)
+        except json.decoder.JSONDecodeError: st.write(f"{filename} cannt decode")
+
+    return json_data
 
 #=================================================================================================
 def get_favorite_locations():
     return get_json_from_file(FAVORITE_LOCATIONS_FILE)
 
 #=================================================================================================
-st.title('Weather App')
+st.title("""Weather App """)
 
 for location, units in get_favorite_locations().items():
     show_weather_for(location, units)
 
 location = st.text_input('Enter a location name', '')
 if location:
-    show_weather_for(location)
+    show_weather_for(location,'C')
 

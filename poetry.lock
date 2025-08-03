@@ -440,6 +440,17 @@ files = [
 ]
 
 [[package]]
+name = "mynode"
+version = "1.1"
+description = "Simplificando el uso de titulos y haciendo un print como en javascript & node.js y tambien agregando la funcion loop para repetir un texto especifico una cantidad de veces especificas!"
+optional = false
+python-versions = "*"
+groups = ["main"]
+files = [
+    {file = "MyNode-1.1.tar.gz", hash = "sha256:6aea9b7f6a916916a7866e54376c1d26f9bb37aa7fd0c3b2aa914b7180e3fb49"},
+]
+
+[[package]]
 name = "narwhals"
 version = "1.48.1"
 description = "Extremely lightweight compatibility layer between dataframe libraries"
@@ -1386,4 +1397,4 @@ testing = ["coverage[toml]", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.13"
-content-hash = "ea3717829dd25c5916c1c89d16719c1a5f628c826d7fca935af8f4a17fa50325"
+content-hash = "f77761da42ea0ac8ec04ad58ce2b160953e7fa8acc7785ad53f3754d3678984a"

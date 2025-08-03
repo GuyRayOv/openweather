@@ -1,4 +1,3 @@
-from time import process_time_ns
 
 import streamlit as st
 import requests
@@ -14,6 +13,7 @@ WEATHER_BASE_URL = "https://api.openweathermap.org/data/3.0/onecall"
 WEATHER_ICON_BASE_URL = "http://openweathermap.org/img/wn/"
 MY_API_KEY = "c4d9b7d003d31461abe0aec452e24151"
 FAVORITE_LOCATIONS_FILE = 'favorite_locations.json'
+DEFAULT_LOCAL_UNITS = "C"
 
 #================================================================================================
 def webapi_call(url, params={}):
@@ -91,25 +91,37 @@ def get_json_from_file(filename):
 
 #=================================================================================================
 def get_favorite_locations():
-    return get_json_from_file(FAVORITE_LOCATIONS_FILE)
+
+    uploaded_file = st.file_uploader("Upload a favorite locations JSON file", type=["json"])
+    if uploaded_file is None: return {}
+
+    json_data = uploaded_file.read()
+
+    try: parsed_json = json.loads(json_data)
+    except json.JSONDecodeError: st.error("Error: Invalid JSON format. Please upload a valid JSON file.")
+
+    return parsed_json
 
 #=================================================================================================
 def select_from_favorite_locations():
 
     favorite_locations = get_favorite_locations()
+    if favorite_locations == {}: return {}
 
     # Create the multiselect widget
     selected_locations = st.multiselect(
         label="Select your preferred locations:",
         options=[location for location in favorite_locations.keys()],
-        default=[]  # Optional: Set default selected options
+        default=[]  # Set default selected options
     )
 
     return { location: favorite_locations[location] for location in selected_locations }
 
 #================================================================================================
 def show_weather_for_favorite_locations():
-    for location, units in select_from_favorite_locations().items():
+    selected_locations = select_from_favorite_locations()
+
+    for location, units in selected_locations.items():
         show_weather_for(location, units)
 
 #=================================================================================================
@@ -120,5 +132,5 @@ if st.checkbox('Show favorite locations'):
     show_weather_for_favorite_locations()
 
 location = st.text_input('Enter a location name', '')
-if location: show_weather_for(location,'C')
+if location: show_weather_for(location, DEFAULT_LOCAL_UNITS)
 

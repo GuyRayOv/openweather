@@ -29,13 +29,11 @@ def webapi_call(url, params={}):
 def get_weather_data_for(location):
     json1 = webapi_call(GEO_BASE_URL, params={"q": location, "appid": MY_API_KEY})
 
-    if json1 == []:
-        st.write(f"{my_location} cannt get web infomation")
-        return json1
+    if json1 == []: st.write(f"{my_location} cannt get web infomation")
 
-    json2 = webapi_call(WEATHER_BASE_URL, params={"lat":json1[0]["lat"], "lon":json1[0]["lon"], "appid": MY_API_KEY})
-    if json2 == []:
-        st.write(f"lat:{json1[0]["lat"]}, lon:{json1[0]["lon"]} cannt get web infomation")
+    else: json2 = webapi_call(WEATHER_BASE_URL, params={"lat":json1[0]["lat"], "lon":json1[0]["lon"], "appid": MY_API_KEY})
+
+    if json2 == []: st.write(f"lat:{json1[0]["lat"]}, lon:{json1[0]["lon"]} cannt get web infomation")
 
     return json2
 #================================================================================================
@@ -50,7 +48,7 @@ def show_map_for(this_location):
     output = st_folium(m, width=700, height=500)
 
 #=================================================================================================
-def show_weather_data_for(location, location_data):
+def show_weather_data_for(location, units, location_data):
 
     # location
     st.write(f"Weather Conditions in {location}")
@@ -59,17 +57,19 @@ def show_weather_data_for(location, location_data):
     st.write(f"Local time: {get_local_datetime(location_data['current']['dt'], location_data['timezone'])}")
 
     # weather details @ location
-    st.write(f"{location_data['current']['weather'][0]['description']}, {int(location_data['current']['temp'] - 273.15)}C, {location_data['current']['humidity']}% humidity")
+    if units == "C": local_temp = location_data['current']['temp'] - 273.15
+    else: local_temp = (location_data['current']['temp'] * 1.8) - 459.67
+    st.write(f"{location_data['current']['weather'][0]['description']},  {int(local_temp)}{units},  {location_data['current']['humidity']}% humidity")
 
     # weather icon
     st.image(WEATHER_ICON_BASE_URL + location_data['current']['weather'][0]['icon'] + "@2x.png")
 
 
 #=================================================================================================
-def show_weather_for(location):
+def show_weather_for(location, units):
 
     location_data = get_weather_data_for(location)
-    show_weather_data_for(location, location_data)
+    show_weather_data_for(location, units, location_data)
     show_map_for(location_data)
 
 #================================================================================================
@@ -87,11 +87,11 @@ def get_json_from_file(filename):
 def get_favorite_locations():
     return get_json_from_file(FAVORITE_LOCATIONS_FILE)
 
-
+#=================================================================================================
 st.title('Weather App')
 
-for location in get_favorite_locations().keys():
-    show_weather_for(location)
+for location, units in get_favorite_locations().items():
+    show_weather_for(location, units)
 
 location = st.text_input('Enter a location name', '')
 if location:

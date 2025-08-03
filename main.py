@@ -1,8 +1,8 @@
 
 import streamlit as st
 import requests
-import datetime
-#from datetime import datetime #, timedelta, timezone
+from datetime import datetime, timezone
+from dateutil.relativedelta import relativedelta
 import pytz
 import json
 import folium
@@ -34,24 +34,38 @@ def get_curent_weather_data_for(lat, lon):
     return json
 
 #==================================================================================================
-def get_historical_weather_data_for(lat, lon, curret_dt):
+def get_historical_weather_data_for(lat, lon, years_back):
 
-   # now_utc = datetime.now(timezone.utc)                    # Get current UTC time
-   # last_year_utc = now_utc - timedelta(days=365)           # Subtract 1 year (approximate as 365 days)
-   # timestamp_last_year = int(last_year_utc.timestamp())    # Get the Unix timestamp (seconds since epoch)
-    return webapi_call(HISTORICAL_WEATHER_BASE_URL, params={"lat":lat, "lon":lon, "dt":curret_dt, "appid": MY_API_KEY})
+    # Get current UTC time
+    now_utc = datetime.now(timezone.utc)
+
+    # One year ago
+    last_year_utc = now_utc - relativedelta(years=years_back)
+
+    # Timestamp
+    timestamp_last_year = int(last_year_utc.timestamp())
+
+    return webapi_call(HISTORICAL_WEATHER_BASE_URL, params={"lat":lat, "lon":lon, "dt":timestamp_last_year, "appid": MY_API_KEY})
 
 #=================================================================================================
 def get_weather_data_for(location):
+
     json1 = webapi_call(GEO_BASE_URL, params={"q": location, "appid": MY_API_KEY})
     if json1 == {}:
         st.write(f"{my_location} cannt get web infomation")
-    else:
-        json2 = get_curent_weather_data_for(json1[0]["lat"], json1[0]["lon"])
-        print(json2)
-        json3 = get_historical_weather_data_for(json1[0]["lat"], json1[0]["lon"], curret_dt=1643803200)
+        return {}
 
-    return json2
+    current_weather_data = get_curent_weather_data_for(json1[0]["lat"], json1[0]["lon"])
+
+    historical_weather_data = {}
+    year = 2025
+    historical_weather_data[year] = int(current_weather_data['current']['temp'] - 273.15)
+
+    for years_back in range(1,25+1):
+        json3 = get_historical_weather_data_for(json1[0]["lat"], json1[0]["lon"], years_back)
+        historical_weather_data[year-years_back] = int(json3['data'][0]['temp'] - 273.15)
+
+    return current_weather_data, historical_weather_data
 
 #================================================================================================
 def show_map_for(this_location):
@@ -87,13 +101,15 @@ def show_weather_data_for(location, local_units, location_data):
 
 #=================================================================================================
 def show_weather_for(location, local_units=DEFAULT_LOCAL_UNITS):
-    location_data = get_weather_data_for(location)
+    location_data, historical_data = get_weather_data_for(location)
     show_weather_data_for(location, local_units, location_data)
     show_map_for(location_data)
 
 #================================================================================================
 def get_local_datetime(utc_timestamp, local_timezone):
-    utc_dt = datetime.datetime.fromtimestamp(utc_timestamp, datetime.UTC).replace(tzinfo=pytz.utc)
+    utc_dt = datetime.fromtimestamp(utc_timestamp, timezone.utc)
+
+    #utc_dt = datetime.datetime.fromtimestamp(utc_timestamp, datetime.UTC).replace(tzinfo=pytz.utc)
     return utc_dt.astimezone(pytz.timezone(local_timezone)).strftime("%A, %B %d, %Y, %I:%M %p")
 
 #=================================================================================================

@@ -102,9 +102,14 @@ def get_favorite_locations():
 
 st.title(""" Weather App """)
 
-if st.checkbox('Show favorite locations'):
-    for location, units in get_favorite_locations().items(): show_weather_for(location, units)
+left_column, right_column = st.columns(2)
 
-location = st.text_input('Enter a location name', '')
-if location: show_weather_for(location,'C')
+# Or even better, call Streamlit functions inside a "with" block:
+with left_column:
+    if st.checkbox('Show favorite locations'):
+        for location, units in get_favorite_locations().items(): show_weather_for(location, units)
+
+with right_column:
+    location = st.text_input('Enter a location name', '')
+    if location: show_weather_for(location,'C')
 

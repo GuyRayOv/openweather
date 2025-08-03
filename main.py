@@ -23,17 +23,17 @@ def webapi_call(url, params={}):
     try: response.raise_for_status()
     except requests.exceptions.HTTPError as e:
         print(e)
-        return []
+        return {}
     return response.json()
 
 #=================================================================================================
 def get_weather_data_for(location):
     json1 = webapi_call(GEO_BASE_URL, params={"q": location, "appid": MY_API_KEY})
 
-    if json1 == []: st.write(f"{my_location} cannt get web infomation")
+    if json1 == {}: st.write(f"{my_location} cannt get web infomation")
     else: json2 = webapi_call(WEATHER_BASE_URL, params={"lat":json1[0]["lat"], "lon":json1[0]["lon"], "appid": MY_API_KEY})
 
-    if json2 == []: st.write(f"lat:{json1[0]["lat"]}, lon:{json1[0]["lon"]} cannt get web infomation")
+    if json2 == {}: st.write(f"lat:{json1[0]["lat"]}, lon:{json1[0]["lon"]} cannt get web infomation")
 
     return json2
 #================================================================================================
@@ -82,10 +82,11 @@ def get_json_from_file(filename):
     try:
         f=open(filename, 'r')
     except FileNotFoundError:
-        st.write(f"{filename} cannt open")
+        print(f"{filename} cannt open")
     else:
         try: json_data = json.load(f)
-        except json.decoder.JSONDecodeError: st.write(f"{filename} cannt decode")
+        except json.decoder.JSONDecodeError:
+            print(f"{filename} cannt decode")
 
     return json_data
 

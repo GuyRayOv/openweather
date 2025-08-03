@@ -98,18 +98,27 @@ def get_favorite_locations():
     return get_json_from_file(FAVORITE_LOCATIONS_FILE)
 
 #=================================================================================================
+def select_from_favorite_locations():
 
+    favorite_locations = get_favorite_locations()
+    options = [location for location in favorite_locations.keys()]
+
+    # Create the multiselect widget
+    selected_locations = st.multiselect(
+        label="Select your preferred locations:",
+        options=options,
+        default=[]  # Optional: Set default selected options
+    )
+
+    return {location: favorite_locations[location] for location in selected_locations}
+
+#=================================================================================================
 
 st.title(""" Weather App """)
 
-left_column, right_column = st.columns(2)
+if st.checkbox('Show favorite locations'):
+    for location, units in select_from_favorite_locations().items(): show_weather_for(location, units)
 
-# Or even better, call Streamlit functions inside a "with" block:
-with left_column:
-    if st.checkbox('Show favorite locations'):
-        for location, units in get_favorite_locations().items(): show_weather_for(location, units)
-
-with right_column:
-    location = st.text_input('Enter a location name', '')
-    if location: show_weather_for(location,'C')
+location = st.text_input('Enter a location name', '')
+if location: show_weather_for(location,'C')
 

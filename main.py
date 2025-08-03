@@ -76,24 +76,25 @@ def get_local_datetime(utc_timestamp, loca_timezone):
     return utc_dt.astimezone(pytz.timezone(loca_timezone)).strftime("%A, %B %d, %Y, %I:%M %p")
 
 #=================================================================================================
-def get_json_from_file(filename):
-    json_data = {}
-    try:
-        f=open(filename, 'r')
-    except FileNotFoundError:
-        print(f"{filename} cannt open")
-    else:
-        try: json_data = json.load(f)
-        except json.decoder.JSONDecodeError:
-            print(f"{filename} cannt decode")
-
-    return json_data
+#def get_json_from_file(filename):
+#    json_data = {}
+#    try:
+#        f=open(filename, 'r')
+#    except FileNotFoundError:
+#        print(f"{filename} cannt open")
+#    else:
+#        try: json_data = json.load(f)
+#        except json.decoder.JSONDecodeError:
+#            print(f"{filename} cannt decode")
+#    return json_data"""
 
 #=================================================================================================
 def get_favorite_locations():
 
+    parsed_json = {}
     uploaded_file = st.file_uploader("Upload a favorite locations JSON file", type=["json"])
-    if uploaded_file is None: return {}
+    if uploaded_file is None:
+        return parsed_json
 
     json_data = uploaded_file.read()
 

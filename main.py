@@ -48,7 +48,7 @@ def get_historical_weather_data_for(lat, lon, years_back):
     return webapi_call(HISTORICAL_WEATHER_BASE_URL, params={"lat":lat, "lon":lon, "dt":timestamp_last_year, "appid": MY_API_KEY})
 
 #=================================================================================================
-def get_weather_data_for(location):
+def get_weather_data_for(location, units=DEFAULT_LOCAL_UNITS):
 
     json1 = webapi_call(GEO_BASE_URL, params={"q": location, "appid": MY_API_KEY})
     if json1 == {}:
@@ -58,12 +58,12 @@ def get_weather_data_for(location):
     current_weather_data = get_curent_weather_data_for(json1[0]["lat"], json1[0]["lon"])
 
     historical_weather_data = {}
-    year = 2025
-    historical_weather_data[year] = int(current_weather_data['current']['temp'] - 273.15)
+    current_year = 2025
+    historical_weather_data[current_year] = int(current_weather_data['current']['temp'] - 273.15)
 
-    for years_back in range(1,25+1):
-        json3 = get_historical_weather_data_for(json1[0]["lat"], json1[0]["lon"], years_back)
-        historical_weather_data[year-years_back] = int(json3['data'][0]['temp'] - 273.15)
+    for years_back in range(1,20+1):
+        json2 = get_historical_weather_data_for(json1[0]["lat"], json1[0]["lon"], years_back)
+        historical_weather_data[current_year-years_back] = int(json2['data'][0]['temp'] - 273.15) if units == "C" else int(json2['data'][0]['temp'] * 1.8 - 459.67)
 
     return current_weather_data, historical_weather_data
 
@@ -88,10 +88,7 @@ def show_weather_data_for(location, local_units, location_data):
     st.write(f"Local time: {get_local_datetime(location_data['current']['dt'], location_data['timezone'])}")
 
     # local temprature
-    if local_units == "C": #Celsius
-        local_temp = location_data['current']['temp'] - 273.15
-    else: #Feranhhit
-        local_temp = (location_data['current']['temp'] * 1.8) - 459.67
+    local_temp = int(location_data['current']['temp'] - 273.15) if local_units == "C" else int(location_data['current']['temp'] * 1.8 - 459.67)
 
     # local weather
     st.write(f"{location_data['current']['weather'][0]['description']},  {int(local_temp)}{local_units},  {location_data['current']['humidity']}% humidity")
@@ -101,9 +98,10 @@ def show_weather_data_for(location, local_units, location_data):
 
 #=================================================================================================
 def show_weather_for(location, local_units=DEFAULT_LOCAL_UNITS):
-    location_data, historical_data = get_weather_data_for(location)
+    location_data, historical_data = get_weather_data_for(location, local_units)
     show_weather_data_for(location, local_units, location_data)
     show_map_for(location_data)
+    st.write(historical_data)
 
 #================================================================================================
 def get_local_datetime(utc_timestamp, local_timezone):

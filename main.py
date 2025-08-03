@@ -1,16 +1,12 @@
 from time import process_time_ns
 
 import streamlit as st
-#import mymodel as m
 import requests
 import datetime
 import pytz
 import json
 import folium
 from streamlit_folium import st_folium
-import pandas as pd
-import numpy as np
-
 
 #================================================================================================
 GEO_BASE_URL = "http://api.openweathermap.org/geo/1.0/direct"
@@ -18,7 +14,6 @@ WEATHER_BASE_URL = "https://api.openweathermap.org/data/3.0/onecall"
 WEATHER_ICON_BASE_URL = "http://openweathermap.org/img/wn/"
 MY_API_KEY = "c4d9b7d003d31461abe0aec452e24151"
 FAVORITE_LOCATIONS_FILE = 'favorite_locations.json'
-
 
 #================================================================================================
 def webapi_call(url, params={}):
@@ -37,8 +32,8 @@ def get_weather_data_for(location):
     else: json2 = webapi_call(WEATHER_BASE_URL, params={"lat":json1[0]["lat"], "lon":json1[0]["lon"], "appid": MY_API_KEY})
 
     if json2 == {}: st.write(f"lat:{json1[0]["lat"]}, lon:{json1[0]["lon"]} cannt get web infomation")
-
     return json2
+
 #================================================================================================
 def show_map_for(this_location):
     # Create a Folium map around the location
@@ -51,27 +46,28 @@ def show_map_for(this_location):
     output = st_folium(m, width=700, height=500)
 
 #=================================================================================================
-def show_weather_data_for(location, units, location_data):
+def show_weather_data_for(location, local_units, location_data):
 
     # location
     st.write(f"Weather Conditions in {location}")
 
-    # time @ location
+    # local time
     st.write(f"Local time: {get_local_datetime(location_data['current']['dt'], location_data['timezone'])}")
 
-    # weather details @ location
-    if units == "C": local_temp = location_data['current']['temp'] - 273.15
+    # local temprature
+    if local_units == "C": local_temp = location_data['current']['temp'] - 273.15
     else: local_temp = (location_data['current']['temp'] * 1.8) - 459.67
-    st.write(f"{location_data['current']['weather'][0]['description']},  {int(local_temp)}{units},  {location_data['current']['humidity']}% humidity")
 
-    # weather icon
+    # local weather
+    st.write(f"{location_data['current']['weather'][0]['description']},  {int(local_temp)}{local_units},  {location_data['current']['humidity']}% humidity")
+
+    # local-weather icon
     st.image(WEATHER_ICON_BASE_URL + location_data['current']['weather'][0]['icon'] + "@2x.png")
 
-
 #=================================================================================================
-def show_weather_for(location, units):
+def show_weather_for(location, local_units):
     location_data = get_weather_data_for(location)
-    show_weather_data_for(location, units, location_data)
+    show_weather_data_for(location, local_units, location_data)
     show_map_for(location_data)
 
 #================================================================================================
@@ -101,23 +97,27 @@ def get_favorite_locations():
 def select_from_favorite_locations():
 
     favorite_locations = get_favorite_locations()
-    options = [location for location in favorite_locations.keys()]
 
     # Create the multiselect widget
     selected_locations = st.multiselect(
         label="Select your preferred locations:",
-        options=options,
+        options=[location for location in favorite_locations.keys()],
         default=[]  # Optional: Set default selected options
     )
 
-    return {location: favorite_locations[location] for location in selected_locations}
+    return { location: favorite_locations[location] for location in selected_locations }
+
+#================================================================================================
+def show_weather_for_favorite_locations():
+    for location, units in select_from_favorite_locations().items():
+        show_weather_for(location, units)
 
 #=================================================================================================
 
 st.title(""" Weather App """)
 
 if st.checkbox('Show favorite locations'):
-    for location, units in select_from_favorite_locations().items(): show_weather_for(location, units)
+    show_weather_for_favorite_locations()
 
 location = st.text_input('Enter a location name', '')
 if location: show_weather_for(location,'C')

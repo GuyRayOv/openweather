@@ -9,7 +9,8 @@ from streamlit_folium import st_folium
 
 #================================================================================================
 GEO_BASE_URL = "http://api.openweathermap.org/geo/1.0/direct"
-WEATHER_BASE_URL = "https://api.openweathermap.org/data/3.0/onecall"
+CURRENT_WEATHER_BASE_URL = "https://api.openweathermap.org/data/3.0/onecall"
+HISTORICAL_WEATHER_BASE_URL = CURRENT_WEATHER_BASE_URL + "/timemachine"
 WEATHER_ICON_BASE_URL = "http://openweathermap.org/img/wn/"
 MY_API_KEY = "c4d9b7d003d31461abe0aec452e24151"
 FAVORITE_LOCATIONS_FILE = 'favorite_locations.json'
@@ -25,13 +26,22 @@ def webapi_call(url, params={}):
     return response.json()
 
 #=================================================================================================
+def get_curent_weather_data_for(lat, lon):
+    json = webapi_call(CURRENT_WEATHER_BASE_URL, params={"lat":lat, "lon":lon, "appid":MY_API_KEY})
+    if json == {}: st.write(f"lat:{lat}, lon:{lon} cannt get web infomation")
+    return json
+
+def get_historical_weather_data_for(lat, lon, dt):
+    return webapi_call(HISTORICAL_WEATHER_BASE_URL, params={"lat":lat, "lon":lon, "dt":dt, "appid": MY_API_KEY})
+
+#=================================================================================================
 def get_weather_data_for(location):
     json1 = webapi_call(GEO_BASE_URL, params={"q": location, "appid": MY_API_KEY})
-
     if json1 == {}: st.write(f"{my_location} cannt get web infomation")
-    else: json2 = webapi_call(WEATHER_BASE_URL, params={"lat":json1[0]["lat"], "lon":json1[0]["lon"], "appid": MY_API_KEY})
+    else:
+        json2 = get_curent_weather_data_for(json1[0]["lat"], json1[0]["lon"])
+        json3 = get_historical_weather_data_for(json1[0]["lat"], json1[0]["lon"], dt=1643803200)
 
-    if json2 == {}: st.write(f"lat:{json1[0]["lat"]}, lon:{json1[0]["lon"]} cannt get web infomation")
     return json2
 
 #================================================================================================

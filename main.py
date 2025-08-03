@@ -65,7 +65,7 @@ def show_weather_data_for(location, local_units, location_data):
     st.image(WEATHER_ICON_BASE_URL + location_data['current']['weather'][0]['icon'] + "@2x.png")
 
 #=================================================================================================
-def show_weather_for(location, local_units):
+def show_weather_for(location, local_units=DEFAULT_LOCAL_UNITS):
     location_data = get_weather_data_for(location)
     show_weather_data_for(location, local_units, location_data)
     show_map_for(location_data)
@@ -92,9 +92,9 @@ def get_local_datetime(utc_timestamp, loca_timezone):
 def get_favorite_locations():
 
     parsed_json = {}
+
     uploaded_file = st.file_uploader("Upload a favorite locations JSON file", type=["json"])
-    if uploaded_file is None:
-        return parsed_json
+    if uploaded_file is None: return parsed_json
 
     json_data = uploaded_file.read()
 
@@ -107,7 +107,8 @@ def get_favorite_locations():
 def select_from_favorite_locations():
 
     favorite_locations = get_favorite_locations()
-    if favorite_locations == {}: return {}
+
+    if favorite_locations == {}: return favorite_locations
 
     # Create the multiselect widget
     selected_locations = st.multiselect(
@@ -119,19 +120,31 @@ def select_from_favorite_locations():
     return { location: favorite_locations[location] for location in selected_locations }
 
 #================================================================================================
-def show_weather_for_favorite_locations():
+def show_weather_for_favorite_locaitons():
     selected_locations = select_from_favorite_locations()
 
     for location, units in selected_locations.items():
         show_weather_for(location, units)
 
+    return selected_locations
+
 #=================================================================================================
+
+changed_locations = False
+favorite_locations = {}
 
 st.title(""" Weather App """)
 
 if st.checkbox('Show favorite locations'):
-    show_weather_for_favorite_locations()
+    latest_favorite_locaitons = show_weather_for_favorite_locaitons()
+    changed_locations = True
 
 location = st.text_input('Enter a location name', '')
-if location: show_weather_for(location, DEFAULT_LOCAL_UNITS)
+if location:
+    show_weather_for(location)
+    favorite_locations[location] = DEFAULT_LOCAL_UNITS
+    changed_locations = True
 
+#if changed_locations == True:
+#    with open(FAVORITE_LOCATIONS_FILE, "w") as json_file:
+#        json.dump(favorite_locations, json_file, indent=4)

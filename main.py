@@ -2,10 +2,12 @@
 import streamlit as st
 import requests
 import datetime
+#from datetime import datetime #, timedelta, timezone
 import pytz
 import json
 import folium
 from streamlit_folium import st_folium
+
 
 #================================================================================================
 GEO_BASE_URL = "http://api.openweathermap.org/geo/1.0/direct"
@@ -13,7 +15,7 @@ CURRENT_WEATHER_BASE_URL = "https://api.openweathermap.org/data/3.0/onecall"
 HISTORICAL_WEATHER_BASE_URL = CURRENT_WEATHER_BASE_URL + "/timemachine"
 WEATHER_ICON_BASE_URL = "http://openweathermap.org/img/wn/"
 MY_API_KEY = "c4d9b7d003d31461abe0aec452e24151"
-FAVORITE_LOCATIONS_FILE = 'favorite_locations.json'
+FAVORITE_LOCATIONS_FILE = "favorite_locations.json"
 DEFAULT_LOCAL_UNITS = "C"
 
 #================================================================================================
@@ -31,16 +33,23 @@ def get_curent_weather_data_for(lat, lon):
     if json == {}: st.write(f"lat:{lat}, lon:{lon} cannt get web infomation")
     return json
 
-def get_historical_weather_data_for(lat, lon, dt):
-    return webapi_call(HISTORICAL_WEATHER_BASE_URL, params={"lat":lat, "lon":lon, "dt":dt, "appid": MY_API_KEY})
+#==================================================================================================
+def get_historical_weather_data_for(lat, lon, curret_dt):
+
+   # now_utc = datetime.now(timezone.utc)                    # Get current UTC time
+   # last_year_utc = now_utc - timedelta(days=365)           # Subtract 1 year (approximate as 365 days)
+   # timestamp_last_year = int(last_year_utc.timestamp())    # Get the Unix timestamp (seconds since epoch)
+    return webapi_call(HISTORICAL_WEATHER_BASE_URL, params={"lat":lat, "lon":lon, "dt":curret_dt, "appid": MY_API_KEY})
 
 #=================================================================================================
 def get_weather_data_for(location):
     json1 = webapi_call(GEO_BASE_URL, params={"q": location, "appid": MY_API_KEY})
-    if json1 == {}: st.write(f"{my_location} cannt get web infomation")
+    if json1 == {}:
+        st.write(f"{my_location} cannt get web infomation")
     else:
         json2 = get_curent_weather_data_for(json1[0]["lat"], json1[0]["lon"])
-        json3 = get_historical_weather_data_for(json1[0]["lat"], json1[0]["lon"], dt=1643803200)
+        print(json2)
+        json3 = get_historical_weather_data_for(json1[0]["lat"], json1[0]["lon"], curret_dt=1643803200)
 
     return json2
 
@@ -65,8 +74,10 @@ def show_weather_data_for(location, local_units, location_data):
     st.write(f"Local time: {get_local_datetime(location_data['current']['dt'], location_data['timezone'])}")
 
     # local temprature
-    if local_units == "C": local_temp = location_data['current']['temp'] - 273.15
-    else: local_temp = (location_data['current']['temp'] * 1.8) - 459.67
+    if local_units == "C": #Celsius
+        local_temp = location_data['current']['temp'] - 273.15
+    else: #Feranhhit
+        local_temp = (location_data['current']['temp'] * 1.8) - 459.67
 
     # local weather
     st.write(f"{location_data['current']['weather'][0]['description']},  {int(local_temp)}{local_units},  {location_data['current']['humidity']}% humidity")
@@ -81,22 +92,9 @@ def show_weather_for(location, local_units=DEFAULT_LOCAL_UNITS):
     show_map_for(location_data)
 
 #================================================================================================
-def get_local_datetime(utc_timestamp, loca_timezone):
+def get_local_datetime(utc_timestamp, local_timezone):
     utc_dt = datetime.datetime.fromtimestamp(utc_timestamp, datetime.UTC).replace(tzinfo=pytz.utc)
-    return utc_dt.astimezone(pytz.timezone(loca_timezone)).strftime("%A, %B %d, %Y, %I:%M %p")
-
-#=================================================================================================
-#def get_json_from_file(filename):
-#    json_data = {}
-#    try:
-#        f=open(filename, 'r')
-#    except FileNotFoundError:
-#        print(f"{filename} cannt open")
-#    else:
-#        try: json_data = json.load(f)
-#        except json.decoder.JSONDecodeError:
-#            print(f"{filename} cannt decode")
-#    return json_data"""
+    return utc_dt.astimezone(pytz.timezone(local_timezone)).strftime("%A, %B %d, %Y, %I:%M %p")
 
 #=================================================================================================
 def get_favorite_locations():

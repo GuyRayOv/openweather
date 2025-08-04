@@ -80,9 +80,14 @@ def get_weather_data_for(location, local_units=CELSIUS, historical=False):
         current_year = 2025
         historical_weather_data[current_year] = convert_kelvin_to_local(current_weather_data['current']['temp'], local_units)
 
-        for years_back in range(1,10+1):
+        for years_back in range(1,historical+1):
             json2 = get_historical_weather_data_for(json1[0]["lat"], json1[0]["lon"], years_back)
-            historical_weather_data[current_year-years_back] = convert_kelvin_to_local(json2['data'][0]['temp'], local_units)
+
+            if 'data' in json2 and json2['data']:
+                historical_weather_data[current_year - years_back] = convert_kelvin_to_local(json2['data'][0]['temp'], local_units)
+            else:
+                print(f"[אזהרה] לא נמצאו נתונים היסטוריים לשנה {current_year - years_back}: {json2}")
+                break
 
     return current_weather_data, historical_weather_data
 
@@ -180,7 +185,6 @@ if st.checkbox('Show favorite locations'):
 
 location = st.text_input('Enter a location name', '')
 if location:
-    if st.checkbox(f"Show historical temperatures for {location} at this day/hour"):
-        show_weather_for(location, historical=True)
-    else:
-        show_weather_for(location, historical=False)
+    years_back = st.slider(f"Show temperatures of past years for {location} at this day:hour", min_value=0, max_value=40, value=0)
+    show_weather_for(location, historical=years_back)
+

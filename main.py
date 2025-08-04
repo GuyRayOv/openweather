@@ -7,6 +7,9 @@ import pytz
 import json
 import folium
 from streamlit_folium import st_folium
+import pandas as pd
+import plotly.express as px
+
 
 
 #================================================================================================
@@ -20,12 +23,21 @@ CELSIUS = "C"
 
 #================================================================================================
 def webapi_call(url, params={}):
-    response = requests.get(url, params=params)
-    try: response.raise_for_status()
+    try:
+        response = requests.get(url, params, timeout=10)
+        response.raise_for_status()
+        return response.json()
+
     except requests.exceptions.HTTPError as e:
-        print(e)
-        return {}
-    return response.json()
+        print(f"HTTP error: {e} - URL: {response.url}")
+    except requests.exceptions.ConnectionError as e:
+        print(f"Connection error: {e}")
+    except requests.exceptions.Timeout as e:
+        print(f"Request timed out: {e}")
+    except requests.exceptions.RequestException as e:
+        print(f"Unexpected error: {e}")
+
+    return {}
 
 #=================================================================================================
 def get_curent_weather_data_for(lat, lon):
@@ -68,7 +80,7 @@ def get_weather_data_for(location, local_units=CELSIUS, historical=False):
         current_year = 2025
         historical_weather_data[current_year] = convert_kelvin_to_local(current_weather_data['current']['temp'], local_units)
 
-        for years_back in range(1,20+1):
+        for years_back in range(1,10+1):
             json2 = get_historical_weather_data_for(json1[0]["lat"], json1[0]["lon"], years_back)
             historical_weather_data[current_year-years_back] = convert_kelvin_to_local(json2['data'][0]['temp'], local_units)
 
@@ -108,7 +120,14 @@ def show_weather_for(location, local_units=CELSIUS, historical=False):
     location_data, historical_data = get_weather_data_for(location, local_units, historical)
     show_weather_data_for(location, local_units, location_data)
     show_map_for(location_data)
-    if historical: st.write(historical_data)
+
+    if historical:
+        data = pd.DataFrame({
+            'Year': historical_data.keys(),
+            'temperature': historical_data.values()
+        })
+        fig = px.line(data, x='Year', y='temperature' , title=f"Historical data for {location}, this date/hour")
+        st.plotly_chart(fig, use_container_width=True)
 
 #================================================================================================
 def get_local_datetime(utc_timestamp, local_timezone):
@@ -165,4 +184,3 @@ if location:
         show_weather_for(location, historical=True)
     else:
         show_weather_for(location, historical=False)
-

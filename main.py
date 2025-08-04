@@ -36,9 +36,7 @@ def get_curent_weather_data_for(lat, lon):
 
 #==================================================================================================
 def convert_kelvin_to_local(kelvin, local_units=CELSIUS):
-    local = int(kelvin - 273.15) if local_units == CELSIUS else int((kelvin * 1.8) - 459.67)
-    print(f"convert: {kelvin}, {local_units}, {local}")
-    return local
+    return int(kelvin - 273.15) if local_units == CELSIUS else int((kelvin * 1.8) - 459.67)
 
 #==================================================================================================
 def get_historical_weather_data_for(lat, lon, years_back):
@@ -55,7 +53,7 @@ def get_historical_weather_data_for(lat, lon, years_back):
     return webapi_call(HISTORICAL_WEATHER_BASE_URL, params={"lat":lat, "lon":lon, "dt":timestamp_last_year, "appid": MY_API_KEY})
 
 #=================================================================================================
-def get_weather_data_for(location, local_units=CELSIUS):
+def get_weather_data_for(location, local_units=CELSIUS, historical=False):
 
     json1 = webapi_call(GEO_BASE_URL, params={"q": location, "appid": MY_API_KEY})
     if json1 == {}:
@@ -65,12 +63,14 @@ def get_weather_data_for(location, local_units=CELSIUS):
     current_weather_data = get_curent_weather_data_for(json1[0]["lat"], json1[0]["lon"])
 
     historical_weather_data = {}
-    current_year = 2025
-    historical_weather_data[current_year] = int(current_weather_data['current']['temp'] - 273.15)
 
-    for years_back in range(1,20+1):
-        json2 = get_historical_weather_data_for(json1[0]["lat"], json1[0]["lon"], years_back)
-        historical_weather_data[current_year-years_back] = convert_kelvin_to_local(json2['data'][0]['temp'], local_units)
+    if historical:
+        current_year = 2025
+        historical_weather_data[current_year] = convert_kelvin_to_local(current_weather_data['current']['temp'], local_units)
+
+        for years_back in range(1,20+1):
+            json2 = get_historical_weather_data_for(json1[0]["lat"], json1[0]["lon"], years_back)
+            historical_weather_data[current_year-years_back] = convert_kelvin_to_local(json2['data'][0]['temp'], local_units)
 
     return current_weather_data, historical_weather_data
 
@@ -104,11 +104,11 @@ def show_weather_data_for(location, local_units, location_data):
     st.image(WEATHER_ICON_BASE_URL + location_data['current']['weather'][0]['icon'] + "@2x.png")
 
 #=================================================================================================
-def show_weather_for(location, local_units=CELSIUS):
-    location_data, historical_data = get_weather_data_for(location, local_units)
+def show_weather_for(location, local_units=CELSIUS, historical=False):
+    location_data, historical_data = get_weather_data_for(location, local_units, historical)
     show_weather_data_for(location, local_units, location_data)
     show_map_for(location_data)
-    st.write(historical_data)
+    if historical: st.write(historical_data)
 
 #================================================================================================
 def get_local_datetime(utc_timestamp, local_timezone):
@@ -148,15 +148,21 @@ def select_from_favorite_locations():
     return { location: favorite_locations[location] for location in selected_locations }
 
 #================================================================================================
-def show_weather_for_favorite_locaitons():
+def show_weather_for_favorite_locaitons(historical=False):
     for location, units in select_from_favorite_locations().items():
-        show_weather_for(location, units)
+        show_weather_for(location, units, historical)
 
 #=================================================================================================
 
 st.title(""" Weather App """)
 
-if st.checkbox('Show favorite locations'): show_weather_for_favorite_locaitons()
+if st.checkbox('Show favorite locations'):
+    show_weather_for_favorite_locaitons(historical=False)
 
 location = st.text_input('Enter a location name', '')
-if location: show_weather_for(location)
+if location:
+    if st.checkbox(f"Show historical temperatures for {location} at this day/hour"):
+        show_weather_for(location, historical=True)
+    else:
+        show_weather_for(location, historical=False)
+

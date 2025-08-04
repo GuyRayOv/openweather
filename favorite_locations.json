@@ -1,5 +1,9 @@
 {
+  "_note": "Temperature units per location. F = Fahrenheit, C = Celsius",
+
   "Chandler": "F",
   "Sydney": "C",
-  "Beit Nir": "C"
+  "Beit Nir": "C",
+
+  "_comment": "KEEP THIS LINE LAST"
 }

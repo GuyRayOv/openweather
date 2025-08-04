@@ -204,11 +204,16 @@ def get_favorite_locations():
     parsed_json = {}
     uploaded_file = st.file_uploader("Upload a favorite locations JSON file", type=["json"])
     if uploaded_file is None: return parsed_json
+
     json_data = uploaded_file.read()
     try:
         parsed_json = json.loads(json_data)
+        parsed_json.pop('_comment', None)
+        parsed_json.pop('_note', None)
+
     except json.JSONDecodeError:
         st.error("Error: Invalid JSON format. Please upload a valid JSON file.")
+
     return parsed_json
 
 #=======================================================================================================================
@@ -237,8 +242,7 @@ def show_weather_for_favorite_locaitons(historical=False):
     for location, units in select_from_favorite_locations().items():
         show_weather_for(location, units, historical)
 
-# ------------------------------ Streamlit UI ------------------------------
-
+# ------------------------------------------------ Streamlit UI --------------------------------------------------------
 st.title(""" Weather App """)
 
 if st.checkbox('Show favorite locations'):

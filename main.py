@@ -13,10 +13,9 @@ import plotly.express as px
 #=======================================================================================================================
 GEO_BASE_URL = "http://api.openweathermap.org/geo/1.0/direct"
 CURRENT_WEATHER_BASE_URL = "https://api.openweathermap.org/data/3.0/onecall"
-HISTORICAL_WEATHER_BASE_URL = CURRENT_WEATHER_BASE_URL + "/timemachine"
-WEATHER_ICON_BASE_URL = "http://openweathermap.org/img/wn/"
+HISTORICAL_WEATHER_BASE_URL = CURRENT_WEATHER_BASE_URL+"/timemachine"
+WEATHER_ICON_BASE_URL = f"http://openweathermap.org/img/wn/"
 MY_API_KEY = "c4d9b7d003d31461abe0aec452e24151"
-FAVORITE_LOCATIONS_FILE = "favorite_locations.json"
 CELSIUS = "C"
 
 #=======================================================================================================================
@@ -56,8 +55,7 @@ def get_curent_weather_data_for(lat, lon):
         dict: Current weather data.
     """
     json = webapi_call(CURRENT_WEATHER_BASE_URL, params={"lat": lat, "lon": lon, "appid": MY_API_KEY})
-    if json == {}:
-        st.write(f"lat:{lat}, lon:{lon} cannot get web information")
+    if json == {}: st.write(f"lat:{lat}, lon:{lon} cannot get web information")
     return json
 
 #=======================================================================================================================
@@ -88,9 +86,7 @@ def get_historical_weather_data_for(lat, lon, years_back):
     now_utc = datetime.now(timezone.utc)
     last_year_utc = now_utc - relativedelta(years=years_back)
     timestamp_last_year = int(last_year_utc.timestamp())
-    return webapi_call(HISTORICAL_WEATHER_BASE_URL, params={
-        "lat": lat, "lon": lon, "dt": timestamp_last_year, "appid": MY_API_KEY
-    })
+    return webapi_call(HISTORICAL_WEATHER_BASE_URL, params={"lat": lat, "lon": lon, "dt": timestamp_last_year, "appid": MY_API_KEY})
 
 #=======================================================================================================================
 def get_weather_data_for(location, local_units=CELSIUS, historical=False):
@@ -157,8 +153,7 @@ def show_weather_data_for(location, local_units, location_data):
     st.write(f"Local time: {get_local_datetime(location_data['current']['dt'], location_data['timezone'])}")
     local_temp = convert_kelvin_to_local(location_data['current']['temp'], local_units)
     st.write(f"{location_data['current']['weather'][0]['description']},  {int(local_temp)}{local_units},  {location_data['current']['humidity']}% humidity")
-    icon_url = WEATHER_ICON_BASE_URL + location_data['current']['weather'][0]['icon'] + "@2x.png"
-    st.image(icon_url)
+    st.image(WEATHER_ICON_BASE_URL + location_data['current']['weather'][0]['icon'] + "@2x.png")
 
 #======================================================================================================================
 def show_weather_for(location, local_units=CELSIUS, historical=False):

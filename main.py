@@ -16,7 +16,7 @@ HISTORICAL_WEATHER_BASE_URL = CURRENT_WEATHER_BASE_URL + "/timemachine"
 WEATHER_ICON_BASE_URL = "http://openweathermap.org/img/wn/"
 MY_API_KEY = "c4d9b7d003d31461abe0aec452e24151"
 FAVORITE_LOCATIONS_FILE = "favorite_locations.json"
-DEFAULT_LOCAL_UNITS = "C"
+CELSIUS = "C"
 
 #================================================================================================
 def webapi_call(url, params={}):
@@ -31,7 +31,14 @@ def webapi_call(url, params={}):
 def get_curent_weather_data_for(lat, lon):
     json = webapi_call(CURRENT_WEATHER_BASE_URL, params={"lat":lat, "lon":lon, "appid":MY_API_KEY})
     if json == {}: st.write(f"lat:{lat}, lon:{lon} cannt get web infomation")
+
     return json
+
+#==================================================================================================
+def convert_kelvin_to_local(kelvin, local_units=CELSIUS):
+    local = int(kelvin - 273.15) if local_units == CELSIUS else int((kelvin * 1.8) - 459.67)
+    print(f"convert: {kelvin}, {local_units}, {local}")
+    return local
 
 #==================================================================================================
 def get_historical_weather_data_for(lat, lon, years_back):
@@ -48,7 +55,7 @@ def get_historical_weather_data_for(lat, lon, years_back):
     return webapi_call(HISTORICAL_WEATHER_BASE_URL, params={"lat":lat, "lon":lon, "dt":timestamp_last_year, "appid": MY_API_KEY})
 
 #=================================================================================================
-def get_weather_data_for(location, units=DEFAULT_LOCAL_UNITS):
+def get_weather_data_for(location, local_units=CELSIUS):
 
     json1 = webapi_call(GEO_BASE_URL, params={"q": location, "appid": MY_API_KEY})
     if json1 == {}:
@@ -63,7 +70,7 @@ def get_weather_data_for(location, units=DEFAULT_LOCAL_UNITS):
 
     for years_back in range(1,20+1):
         json2 = get_historical_weather_data_for(json1[0]["lat"], json1[0]["lon"], years_back)
-        historical_weather_data[current_year-years_back] = int(json2['data'][0]['temp'] - 273.15) if units == "C" else int(json2['data'][0]['temp'] * 1.8 - 459.67)
+        historical_weather_data[current_year-years_back] = convert_kelvin_to_local(json2['data'][0]['temp'], local_units)
 
     return current_weather_data, historical_weather_data
 
@@ -88,7 +95,7 @@ def show_weather_data_for(location, local_units, location_data):
     st.write(f"Local time: {get_local_datetime(location_data['current']['dt'], location_data['timezone'])}")
 
     # local temprature
-    local_temp = int(location_data['current']['temp'] - 273.15) if local_units == "C" else int(location_data['current']['temp'] * 1.8 - 459.67)
+    local_temp = convert_kelvin_to_local(location_data['current']['temp'], local_units)
 
     # local weather
     st.write(f"{location_data['current']['weather'][0]['description']},  {int(local_temp)}{local_units},  {location_data['current']['humidity']}% humidity")
@@ -97,7 +104,7 @@ def show_weather_data_for(location, local_units, location_data):
     st.image(WEATHER_ICON_BASE_URL + location_data['current']['weather'][0]['icon'] + "@2x.png")
 
 #=================================================================================================
-def show_weather_for(location, local_units=DEFAULT_LOCAL_UNITS):
+def show_weather_for(location, local_units=CELSIUS):
     location_data, historical_data = get_weather_data_for(location, local_units)
     show_weather_data_for(location, local_units, location_data)
     show_map_for(location_data)
@@ -135,38 +142,21 @@ def select_from_favorite_locations():
     # Create the multiselect widget
     selected_locations = st.multiselect(
         label="Select your preferred locations:",
-        options=[location for location in favorite_locations.keys()],
-        default=[]  # Set default selected options
+        options=[location for location in favorite_locations.keys()]
     )
 
     return { location: favorite_locations[location] for location in selected_locations }
 
 #================================================================================================
 def show_weather_for_favorite_locaitons():
-    selected_locations = select_from_favorite_locations()
-
-    for location, units in selected_locations.items():
+    for location, units in select_from_favorite_locations().items():
         show_weather_for(location, units)
-
-    return selected_locations
 
 #=================================================================================================
 
-changed_locations = False
-favorite_locations = {}
-
 st.title(""" Weather App """)
 
-if st.checkbox('Show favorite locations'):
-    latest_favorite_locaitons = show_weather_for_favorite_locaitons()
-    changed_locations = True
+if st.checkbox('Show favorite locations'): show_weather_for_favorite_locaitons()
 
 location = st.text_input('Enter a location name', '')
-if location:
-    show_weather_for(location)
-    favorite_locations[location] = DEFAULT_LOCAL_UNITS
-    changed_locations = True
-
-#if changed_locations == True:
-#    with open(FAVORITE_LOCATIONS_FILE, "w") as json_file:
-#        json.dump(favorite_locations, json_file, indent=4)
+if location: show_weather_for(location)

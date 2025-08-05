@@ -143,25 +143,6 @@ def show_map_for(this_location):
     st_folium(m, width=700, height=500)
 
 #======================================================================================================================
-def show_weather_data_for(location, local_units, location_data):
-    """Display weather data for a given location.
-
-    Args:
-        location (str): Location name.
-        local_units (str): Temperature unit.
-        location_data (dict): Current weather data.
-    """
-    st.write(f"Weather Conditions in {location}: ")
-    local_temp = convert_kelvin_to_local(location_data['current']['temp'], local_units)
-    st.write(
-        f"{location_data['current']['weather'][0]['description']},  "
-        f"{int(local_temp)}°{local_units},  "
-        f"{location_data['current']['humidity']}% humidity"
-    )
-    st.image(WEATHER_ICON_BASE_URL + location_data['current']['weather'][0]['icon'] + "@2x.png")
-    st.write(f"Local time: {get_local_datetime(location_data['current']['dt'], location_data['timezone'])}")
-
-#======================================================================================================================
 def show_weather_for(location, local_units=CELSIUS, historical=False):
     """Display full weather view including chart and map.
 
@@ -171,7 +152,17 @@ def show_weather_for(location, local_units=CELSIUS, historical=False):
         historical (bool or int): Include historical data.
     """
     location_data, historical_data = get_weather_data_for(location, local_units, historical)
-    show_weather_data_for(location, local_units, location_data)
+
+    st.write(f"Weather Conditions in {location}: ")
+    st.write(f"Local time: {get_local_datetime(location_data['current']['dt'], location_data['timezone'])}")
+
+    local_temp = convert_kelvin_to_local(location_data['current']['temp'], local_units)
+    st.write(
+        f"{location_data['current']['weather'][0]['description']},  "
+        f"{int(local_temp)}°{local_units},  "
+        f"{location_data['current']['humidity']}% humidity"
+    )
+    st.image(WEATHER_ICON_BASE_URL + location_data['current']['weather'][0]['icon'] + "@2x.png")
 
     #Create line plot
     if historical:
@@ -188,7 +179,6 @@ def show_weather_for(location, local_units=CELSIUS, historical=False):
         ax.set_xlabel(f"Temperature (°{local_units})")
         ax.set_ylabel("Number of Days")
         st.plotly_chart(fig)
-
 
     show_map_for(location_data)
 
@@ -262,5 +252,5 @@ if st.checkbox('Show favorite locations'):
 
 location = st.text_input('Enter a location name', '')
 if location:
-    years_back = st.slider(f"Show temperatures of past years in {location} at current Day:Hour", min_value=0, max_value=20, value=0)
+    years_back = st.slider(f"Show temperatures of past years in {location} at current Day:Hour", min_value=0, max_value=25, value=0)
     show_weather_for(location, historical=years_back)

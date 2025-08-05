@@ -16,6 +16,8 @@ It is a Streamlit web application that presents current and historical weather d
 
 🔧 Features
 
+
+
 Users can either:
 
 * Enter a location manually via a text box, or
@@ -23,31 +25,35 @@ Users can either:
 
 
 
-For manual entries:
+The presentation:
 
-* The app displays both current and historical weather data.
+* For text box manual entries, the app displays both current and historical weather data.
 * For locations in the JSON file, only current weather data is displayed (no historical data).
-* Maps are displayed for all selected locations.
+* Maps are displayed for all locations.
+
+
 
 
 
 📁 **JSON Schema Example**
 
+
+
 {
 
-&nbsp; "\_note": "Temperature units per location. F = Fahrenheit, C = Celsius",
+  "\_note": "Temperature units per location. F = Fahrenheit, C = Celsius",
 
 
 
-&nbsp; "Chandler": "F",
+  "Chandler": "F",
 
-&nbsp; "Sydney": "C",
+  "Sydney": "C",
 
-&nbsp; "Beit Nir": "C",
+  "בית ניר": "C",
 
 
 
-&nbsp; "\_comment": "KEEP THIS LINE LAST"
+  "\_comment": "KEEP THIS LINE LAST"
 
 }
 
@@ -60,6 +66,4 @@ This project includes a favorite\_locations.json file with preferred temperature
 Overall, I enjoyed building this application. It was my first time using AI chat tools to debug and fine-tune code, which was both helpful and an exciting new experience.
 
 The project took me several tens of hours to complete, and it helped deepen my understanding of API integration, JSON handling, and web app deployment using Streamlit.
-
-
 

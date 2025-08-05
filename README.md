@@ -16,8 +16,6 @@ It is a Streamlit web application that presents current and historical weather d
 
 🔧 Features
 
-
-
 Users can either:
 
 * Enter a location manually via a text box, or
@@ -37,19 +35,17 @@ The presentation:
 
 📁 **JSON Schema Example**
 
-
-
 {
 
   "\_note": "Temperature units per location. F = Fahrenheit, C = Celsius",
 
 
 
-  "Chandler": "F",
+"Chandler" : "F",
 
-  "Sydney": "C",
+"Sydney" : "C",
 
-  "בית ניר": "C",
+בית ניר"" : C",
 
 
 
@@ -66,4 +62,8 @@ This project includes a favorite\_locations.json file with preferred temperature
 Overall, I enjoyed building this application. It was my first time using AI chat tools to debug and fine-tune code, which was both helpful and an exciting new experience.
 
 The project took me several tens of hours to complete, and it helped deepen my understanding of API integration, JSON handling, and web app deployment using Streamlit.
+
+And, oh, performance... sacks. I really need to learn python profiling/optimizations at some point
+
+ 
 

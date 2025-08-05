@@ -59,11 +59,13 @@ This project includes a favorite\_locations.json file with preferred temperature
 
 💬 **Reflection**
 
-Overall, I enjoyed building this application. It was my first time using AI chat tools to debug and fine-tune code, which was both helpful and an exciting new experience.
+Overall, I enjoyed building this application. It was my first time using AI chat tools to debug and fine-tune code, which was both helpful and an exciting new experience. Funtions: show\_temperature\_histogram, and show\_temperature\_trendline where copied from a Chat until i found a version that done crush. the reset where handwritten
 
-The project took me several tens of hours to complete, and it helped deepen my understanding of API integration, JSON handling, and web app deployment using Streamlit.
+Performance... sacks. I really need to learn python profiling/optimizations at some point
 
-And, oh, performance... sacks. I really need to learn python profiling/optimizations at some point
+
+
+The project took me some 200hours to complete, and it helped deepen my understanding of API integration, JSON handling, and web app deployment using Streamlit.
 
  
 

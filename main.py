@@ -9,6 +9,8 @@ import folium
 from streamlit_folium import st_folium
 import pandas as pd
 import plotly.express as px
+import matplotlib.pyplot as plt
+
 
 #=======================================================================================================================
 GEO_BASE_URL = "http://api.openweathermap.org/geo/1.0/direct"
@@ -149,11 +151,15 @@ def show_weather_data_for(location, local_units, location_data):
         local_units (str): Temperature unit.
         location_data (dict): Current weather data.
     """
-    st.write(f"Weather Conditions in {location}")
-    st.write(f"Local time: {get_local_datetime(location_data['current']['dt'], location_data['timezone'])}")
+    st.write(f"Weather Conditions in {location}: ")
     local_temp = convert_kelvin_to_local(location_data['current']['temp'], local_units)
-    st.write(f"{location_data['current']['weather'][0]['description']},  {int(local_temp)}{local_units},  {location_data['current']['humidity']}% humidity")
+    st.write(
+        f"{location_data['current']['weather'][0]['description']},  "
+        f"{int(local_temp)}°{local_units},  "
+        f"{location_data['current']['humidity']}% humidity"
+    )
     st.image(WEATHER_ICON_BASE_URL + location_data['current']['weather'][0]['icon'] + "@2x.png")
+    st.write(f"Local time: {get_local_datetime(location_data['current']['dt'], location_data['timezone'])}")
 
 #======================================================================================================================
 def show_weather_for(location, local_units=CELSIUS, historical=False):
@@ -166,7 +172,8 @@ def show_weather_for(location, local_units=CELSIUS, historical=False):
     """
     location_data, historical_data = get_weather_data_for(location, local_units, historical)
     show_weather_data_for(location, local_units, location_data)
-    show_map_for(location_data)
+
+    #Create line plot
     if historical:
         data = pd.DataFrame({
             'Year': historical_data.keys(),
@@ -174,6 +181,16 @@ def show_weather_for(location, local_units=CELSIUS, historical=False):
         })
         fig = px.line(data, x='Year', y='temperature', title=f"Historical data for {location}, this date/hour")
         st.plotly_chart(fig, use_container_width=True)
+
+        fig, ax = plt.subplots()
+        ax.hist(x=list(historical_data.values()), bins=20)
+        ax.set_title("Distribution of historical Temperatures at this Date:Hour")
+        ax.set_xlabel(f"Temperature (°{local_units})")
+        ax.set_ylabel("Number of Days")
+        st.plotly_chart(fig)
+
+
+    show_map_for(location_data)
 
 #=======================================================================================================================
 def get_local_datetime(utc_timestamp, local_timezone):
@@ -245,5 +262,5 @@ if st.checkbox('Show favorite locations'):
 
 location = st.text_input('Enter a location name', '')
 if location:
-    years_back = st.slider(f"Show temperatures of past years in {location} at current Day:Hour", min_value=0, max_value=40, value=0)
+    years_back = st.slider(f"Show temperatures of past years in {location} at current Day:Hour", min_value=0, max_value=20, value=0)
     show_weather_for(location, historical=years_back)

@@ -45,7 +45,7 @@ The presentation:
 
 "Sydney" : "C",
 
-בית ניר"" : C",
+"Beit Nir" : "C",
 
 
 

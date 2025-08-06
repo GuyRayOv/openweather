@@ -32,7 +32,7 @@ MY_API_KEY = "c4d9b7d003d31461abe0aec452e24151"
 CELSIUS = "C"
 
 # ----------------------------------------------------------------------------------------------------------------------
-def webapi_call(url, params=None):
+def webapi_call(url, params={}):
     """
     Send a GET request to an API endpoint.
 
@@ -43,13 +43,11 @@ def webapi_call(url, params=None):
     Returns:
         dict: Parsed JSON response from the API, or an empty dictionary if an error occurs.
     """
-    if params is None:
-        params = {}
-
     try:
         response = requests.get(url, params, timeout=10)
         response.raise_for_status()
         return response.json()
+
     except requests.exceptions.HTTPError as e:
         print(f"HTTP error: {e} - URL: {response.url}")
     except requests.exceptions.ConnectionError as e:
@@ -58,7 +56,7 @@ def webapi_call(url, params=None):
         print(f"Request timed out: {e}")
     except requests.exceptions.RequestException as e:
         print(f"Unexpected error: {e}")
-    return {}
+    return None
 
 # ----------------------------------------------------------------------------------------------------------------------
 def get_curent_weather_data_for(lat, lon):
@@ -73,8 +71,7 @@ def get_curent_weather_data_for(lat, lon):
         dict: Current weather data in JSON format.
     """
     json_data = webapi_call(CURRENT_WEATHER_BASE_URL, params={"lat": lat, "lon": lon, "appid": MY_API_KEY})
-    if json_data == {}:
-        st.write(f"lat:{lat}, lon:{lon} cannot get web information")
+    if not json_data: st.write(f"lat:{lat}, lon:{lon} cannot get web information")
     return json_data
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -132,8 +129,10 @@ def get_weather_data_for(location, local_units=CELSIUS, historical=False):
         st.write(f"{location} cannot get web information")
         return None, None
 
-    lat, lon = geo_data[0]["lat"], geo_data[0]["lon"]
-    current_weather_data = get_curent_weather_data_for(lat, lon)
+    current_weather_data = get_curent_weather_data_for(geo_data[0]["lat"], geo_data[0]["lon"])
+    if not current_weather_data:
+        st.write(f"{location} cannot get web information")
+        return None, None
 
     historical_weather_data = {}
     if historical:
@@ -143,13 +142,13 @@ def get_weather_data_for(location, local_units=CELSIUS, historical=False):
         )
 
         for years_back in range(1, historical + 1):
-            hist_data = get_historical_weather_data_for(lat, lon, years_back)
+            hist_data = get_historical_weather_data_for(geo_data[0]["lat"], geo_data[0]["lon"], years_back)
             if 'data' in hist_data and hist_data['data']:
                 historical_weather_data[current_year - years_back] = convert_kelvin_to_local(
                     hist_data['data'][0]['temp'], local_units
                 )
             else:
-                print(f"[Warning] No historical data for year {current_year - years_back}")
+                st.write(f"[Warning] No historical data for year {current_year - years_back}")
                 return None, None
 
     return current_weather_data, historical_weather_data
@@ -237,7 +236,7 @@ def show_weather_for(location, local_units=CELSIUS, historical=False):
     location_data, historical_data = get_weather_data_for(location, local_units, historical)
     if not location_data:
         st.error("No weather data for this location.")
-        return
+        return None
 
     st.write(f"Weather Conditions in {location}:")
     st.write(f"Local time: {get_local_datetime(location_data['current']['dt'], location_data['timezone'])}")
@@ -281,8 +280,7 @@ def get_favorite_locations():
     """
     parsed_json = {}
     uploaded_file = st.file_uploader("Upload a favorite locations JSON file", type=["json"])
-    if uploaded_file is None:
-        return parsed_json
+    if uploaded_file is None: return None
 
     try:
         parsed_json = json.loads(uploaded_file.read())
@@ -303,7 +301,7 @@ def select_from_favorite_locations():
     """
     favorite_locations = get_favorite_locations()
     if not favorite_locations:
-        return {}
+        return None
 
     selected_locations = st.multiselect(
         label="Select your preferred locations:",

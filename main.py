@@ -161,12 +161,20 @@ def show_map_for(this_location):
     Args:
         this_location (dict): Dictionary containing 'lat' and 'lon' keys.
     """
-    m = folium.Map(location=[this_location['lat'], this_location['lon']], zoom_start=13)
+    lat = this_location['lat']
+    lon = this_location['lon']
+    name = this_location.get('name', '')
+
+    # Create a compact deterministic key (replace spaces, round coords so the key isn't long)
+    key = f"map_{name.replace(' ', '_')}_{round(lat, 4)}_{round(lon, 4)}"
+
+    m = folium.Map(location=[lat, lon], zoom_start=13)
     folium.Marker(
-        location=[this_location['lat'], this_location['lon']],
+        location=[lat, lon],
         popup="This is a marker", tooltip="Click me"
     ).add_to(m)
-    st_folium(m, width=700, height=500)
+
+    st_folium(m, width=700, height=500, key=key)
 
 # ----------------------------------------------------------------------------------------------------------------------
 def show_temperature_trendline(historical_data):

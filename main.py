@@ -300,8 +300,7 @@ def select_from_favorite_locations():
         dict: Selected locations and their units.
     """
     favorite_locations = get_favorite_locations()
-    if not favorite_locations:
-        return None
+    if not favorite_locations: return {}
 
     selected_locations = st.multiselect(
         label="Select your preferred locations:",
